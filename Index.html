@@ -1,0 +1,147 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Data Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: pink;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .search-filter {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    input, select {
+      padding: 8px;
+      font-size: 16px;
+    }
+    .card-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+    }
+    .student-card {
+      background: #81DADA;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      width: 250px;
+    }
+    .student-card h3 {
+      margin-top: 0;
+    }
+    .results {
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <h1>📚 Student Data Dashboard</h1>  <div class="search-filter">
+    <input type="text" id="search" placeholder="🔍 Search by name...">
+    <select id="subjectFilter">
+      <option value="">All Subjects</option>
+      <option value="Math">Math</option>
+      <option value="Science">Science</option>
+      <option value="English">English</option>
+    </select>
+  </div>  <div class="card-container" id="cardContainer"></div>  <div class="results" id="stats"></div>  <script>
+    // List of 50 student names
+    const studentNames = [
+      "Aarav", "Vivaan", "Aditya", "Vihaan", "Arjun", "Sai", "Reyansh", "Ayaan", "Krishna", "Ishaan",
+      "Kabir", "Atharv", "Rudra", "Ansh", "Aryan", "Dhruv", "Aayush", "Om", "Shivansh", "Yuvraj",
+      "Anaya", "Myra", "Aadhya", "Siya", "Aarohi", "Anvi", "Navya", "Ira", "Prisha", "Eva",
+      "Saanvi", "Avni", "Meera", "Ishita", "Kavya", "Riya", "Pari", "Nitya", "Tanya", "Shruti",
+      "Trisha", "Pihu", "Jiya", "Vanya", "Mahi", "Kiara", "Ritika", "Sanika", "Zara", "Aanya"
+    ];
+
+    const students = studentNames.map((name) => {
+      return {
+        name,
+        marks: {
+          Math: Math.floor(Math.random() * 41) + 60,
+          Science: Math.floor(Math.random() * 41) + 60,
+          English: Math.floor(Math.random() * 41) + 60
+        }
+      };
+    });
+
+    function renderCards(data) {
+      const container = document.getElementById("cardContainer");
+      container.innerHTML = "";
+      data.forEach(student => {
+        const card = document.createElement("div");
+        card.className = "student-card";
+        card.innerHTML = `<h3>${student.name}</h3>
+          <p>Math: ${student.marks.Math}</p>
+          <p>Science: ${student.marks.Science}</p>
+          <p>English: ${student.marks.English}</p>`;
+        container.appendChild(card);
+      });
+    }
+
+    function updateStats() {
+      const subjects = ["Math", "Science", "English"];
+      const statsDiv = document.getElementById("stats");
+      let html = "<h2>📊 Subject Stats</h2>";
+
+      subjects.forEach(subject => {
+        const marks = students.map(s => s.marks[subject]);
+        const avg = (marks.reduce((a,b) => a+b, 0) / marks.length).toFixed(2);
+        const max = Math.max(...marks);
+        const min = Math.min(...marks);
+        const topper = students.find(s => s.marks[subject] === max);
+        html += `<p><strong>${subject}</strong>: Avg = ${avg}, Highest = ${max}, Lowest = ${min} | 🏆 Topper: ${topper.name}</p>`;
+      });
+
+      const top10 = [...students].map(s => ({
+        name: s.name,
+        total: s.marks.Math + s.marks.Science + s.marks.English
+      })).sort((a, b) => b.total - a.total).slice(0, 10);
+
+      html += `<h2>🏅 Top 10 Overall Scorers</h2><ol>`;
+      top10.forEach(s => {
+        html += `<li>${s.name} - Total: ${s.total}</li>`;
+      });
+      html += `</ol>`;
+
+      const avgTotal = students.reduce((a, s) => a + s.marks.Math + s.marks.Science + s.marks.English, 0) / students.length;
+      const avgStudents = students.filter(s => {
+        const total = s.marks.Math + s.marks.Science + s.marks.English;
+        return Math.abs(total - avgTotal) < 2;
+      });
+
+      html += `<h2>🎯 Students with Overall Average Marks (~${avgTotal.toFixed(2)})</h2><ul>`;
+      avgStudents.forEach(s => {
+        const total = s.marks.Math + s.marks.Science + s.marks.English;
+        html += `<li>${s.name} - Total: ${total}</li>`;
+      });
+      html += `</ul>`;
+
+      statsDiv.innerHTML = html;
+    }
+
+    document.getElementById("search").addEventListener("input", function() {
+      const query = this.value.toLowerCase();
+      const filtered = students.filter(s => s.name.toLowerCase().includes(query));
+      renderCards(filtered);
+    });
+
+    document.getElementById("subjectFilter").addEventListener("change", function() {
+      const subject = this.value;
+      if (!subject) return renderCards(students);
+      const sorted = [...students].sort((a, b) => b.marks[subject] - a.marks[subject]);
+      renderCards(sorted);
+    });
+
+    renderCards(students);
+    updateStats();
+  </script></body>
+</html>
